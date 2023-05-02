@@ -1,7 +1,6 @@
 import { createContext, useEffect, useReducer } from 'react';
-import axios from 'axios';
 import { MatxLoading } from 'app/components';
-import {signIn, signUp, confirmSignup} from './../../auth';
+import {signIn, signUp, confirmSignup, refreshSignin} from './../../auth';
 
 const initialState = {
   user: null,
@@ -60,23 +59,19 @@ const AuthContext = createContext({
   login: () => {},
   logout: () => {},
   register: () => {},
-  confirmCode: ()=>{}
+  confirmCode: ()=>{},
+  reload: () => {}
 });
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const login = async (email, password) => {
-    const {idToken, refreshToken, accessToken} = await signIn(email, password);//axios.post('/api/auth/login', { email, password });
-    
-    
-    dispatch({ type: 'LOGIN', payload: { 
-      name: idToken.payload.name, 
-      user:idToken.payload.email, 
-      accessToken: accessToken.jwtToken,
-      refreshToken: refreshToken.token 
-    } });
+
+  const login = async (email, password, remember) => {
+    const {name, user} = await signIn(email, password, remember);
+    dispatch({ type: 'LOGIN', payload: { name,  user }});
   };
+
 
   const register = async (email, username, password) => {
     await signUp(username, email, password) //await axios.post('/api/auth/register', { email, username, password });    
@@ -91,15 +86,15 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGOUT' });
   };
 
+
   useEffect(() => {
     (async () => {
-      try {
-        const { data } = await axios.get('/api/auth/profile');
-        dispatch({ type: 'INIT', payload: { isAuthenticated: true, user: data.user } });
-      } catch (err) {
-        console.error(err);
-        dispatch({ type: 'INIT', payload: { isAuthenticated: false, user: null } });
-      }
+        const res = await refreshSignin();
+        
+        if(res)
+        { dispatch({ type: 'INIT', payload: {...res, isAuthenticated: true}}); }
+        else
+        { dispatch({ type: 'INIT', payload: {isAuthenticated: false} }) }
     })();
   }, []);
 

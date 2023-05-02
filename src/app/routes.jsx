@@ -7,10 +7,10 @@ import MatxLayout from './components/MatxLayout/MatxLayout';
 import materialRoutes from 'app/views/material-kit/MaterialRoutes';
 
 // session pages
-const NotFound = Loadable(lazy(() => import('app/views/sessions/NotFound')));
-const JwtLogin = Loadable(lazy(() => import('app/views/sessions/JwtLogin')));
-const JwtRegister = Loadable(lazy(() => import('app/views/sessions/JwtRegister')));
-const ForgotPassword = Loadable(lazy(() => import('app/views/sessions/ForgotPassword')));
+const NotFound      = Loadable(lazy(() => import('app/views/sessions/NotFound')));
+const JwtLogin      = Loadable(lazy(() => import('app/views/sessions/JwtLogin')));
+const JwtRegister     = Loadable(lazy(() => import('app/views/sessions/JwtRegister')));
+const ForgotPassword  = Loadable(lazy(() => import('app/views/sessions/ForgotPassword')));
 
 // echart page
 const AppEchart = Loadable(lazy(() => import('app/views/charts/echarts/AppEchart')));

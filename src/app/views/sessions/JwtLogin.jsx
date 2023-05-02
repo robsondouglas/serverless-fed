@@ -57,13 +57,13 @@ const InnerJwtLogin = () => {
 
   const { login } = useAuth();
 
-  const validate = async({email, password})=>{
+  const validate = async({email, password, remember})=>{
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, remember);
       navigate('/');
     } catch (e) {
-      console.log(e)
+      
       const msgs = {
         "UserNotConfirmedException": "O usuário ainda não confirmou o endereço de email",
         "NotAuthorizedException": "A Usuário/senha incorretos"
