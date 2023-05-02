@@ -6,12 +6,8 @@ const UserPool = new CognitoUserPool({
 });
 
 export const signUp = (name, email, pwd) => new Promise((resolve,reject)=>{
-    
     UserPool.signUp(email, pwd, [{Name:'name', Value: name}], null, (error, data)=>{
-        if(error)
-        {reject(error)}
-        else
-        {resolve(data)}
+         error ?  reject(error) : resolve(data)
     });
 });
 
