@@ -16,8 +16,15 @@ export const signIn = (usr, pwd) => new Promise((resolve, reject) => {
     const _user   = new CognitoUser({ Username: usr, Pool: UserPool });
 
     _user.authenticateUser(details, {
-        onSuccess: (res)=>resolve(res),
-        onError: (err)=> reject(err),
+        onSuccess: resolve,
+        onFailure: reject,
         newPasswordRequired: ()=>console.log('required')
+    });
+})
+
+export const confirmSignup = (usr, code) => new Promise((resolve, reject) => {
+    const _user   = new CognitoUser({ Username: usr, Pool: UserPool });
+    _user.confirmRegistration(code, false, (error, data)=>{
+        error ?  reject(error) : resolve(data)
     });
 })

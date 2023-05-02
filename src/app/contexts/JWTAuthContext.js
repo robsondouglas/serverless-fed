@@ -1,7 +1,7 @@
 import { createContext, useEffect, useReducer } from 'react';
 import axios from 'axios';
 import { MatxLoading } from 'app/components';
-import {signIn, signUp} from './../../auth';
+import {signIn, signUp, confirmSignup} from './../../auth';
 
 const initialState = {
   user: null,
@@ -44,9 +44,9 @@ const reducer = (state, action) => {
     }
 
     case 'REGISTER': {
-      const { user } = action.payload;
-
-      return { ...state, isAuthenticated: true, user };
+      // const { user } = action.payload;
+      // return { ...state, isAuthenticated: true, user };
+      return { ...state, isAuthenticated: false, user: null };
     }
 
     default:
@@ -59,25 +59,33 @@ const AuthContext = createContext({
   method: 'JWT',
   login: () => {},
   logout: () => {},
-  register: () => {}
+  register: () => {},
+  confirmCode: ()=>{}
 });
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const login = async (email, password) => {
-    const response = await signIn(email, password);//axios.post('/api/auth/login', { email, password });
-    const { user } = response.data;
-
-    dispatch({ type: 'LOGIN', payload: { user } });
+    const {idToken, refreshToken, accessToken} = await signIn(email, password);//axios.post('/api/auth/login', { email, password });
+    
+    
+    dispatch({ type: 'LOGIN', payload: { 
+      name: idToken.payload.name, 
+      user:idToken.payload.email, 
+      accessToken: accessToken.jwtToken,
+      refreshToken: refreshToken.token 
+    } });
   };
 
   const register = async (email, username, password) => {
-    const response = await signUp(username, email, password) //await axios.post('/api/auth/register', { email, username, password });
-    const { user } = response.data;
-
-    dispatch({ type: 'REGISTER', payload: { user } });
+    await signUp(username, email, password) //await axios.post('/api/auth/register', { email, username, password });    
+    dispatch({ type: 'REGISTER', payload: {  } });
   };
+
+  const confirmCode = async (email, code) => {
+    await confirmSignup(email, code);
+  }; 
 
   const logout = () => {
     dispatch({ type: 'LOGOUT' });
@@ -99,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   if (!state.isInitialised) return <MatxLoading />;
 
   return (
-    <AuthContext.Provider value={{ ...state, method: 'JWT', login, logout, register }}>
+    <AuthContext.Provider value={{ ...state, method: 'JWT', login, logout, register, confirmCode }}>
       {children}
     </AuthContext.Provider>
   );

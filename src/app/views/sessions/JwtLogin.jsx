@@ -4,9 +4,11 @@ import { Box, styled, useTheme } from '@mui/material';
 import { Paragraph } from 'app/components/Typography';
 import useAuth from 'app/hooks/useAuth';
 import { Formik } from 'formik';
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
+import ConfirmRegister from './ConfirmRegister';
 
 const FlexBox = styled(Box)(() => ({ display: 'flex', alignItems: 'center' }));
 
@@ -34,34 +36,63 @@ const JWTRoot = styled(JustifyBox)(() => ({
 
 // inital login credentials
 const initialValues = {
-  email: 'jason@ui-lib.com',
-  password: 'dummyPass',
+  email: '',
+  password: '',
   remember: true
 };
 
 // form field validation schema
 const validationSchema = Yup.object().shape({
-  password: Yup.string()
-    .min(6, 'Password must be 6 character length')
-    .required('Password is required!'),
-  email: Yup.string().email('Invalid Email address').required('Email is required!')
+  password: Yup.string().required('Senha é obrigatória'),
+  email:    Yup.string().email('Endereço de email inválido').required('Email é obrigatório')
 });
 
-const JwtLogin = () => {
+const InnerJwtLogin = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  const [formValue, setFormValue] = useState({});
+  const [confirmCode, setConfirmCode] = useState(false);
 
   const { login } = useAuth();
 
-  const handleFormSubmit = async (values) => {
+  const validate = async({email, password})=>{
     setLoading(true);
     try {
-      await login(values.email, values.password);
+      await login(email, password);
       navigate('/');
     } catch (e) {
+      console.log(e)
+      const msgs = {
+        "UserNotConfirmedException": "O usuário ainda não confirmou o endereço de email",
+        "NotAuthorizedException": "A Usuário/senha incorretos"
+      }
+      
+      
+      enqueueSnackbar(msgs[e.code] || 'Usuário/senha incorretos', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
+      
+      console.log(e.code)
+      if(e.code === 'UserNotConfirmedException' )
+      {setConfirmCode(true)}
+
       setLoading(false);
     }
+  }
+
+  const handleConfirm = async(flag)=>{
+    if(flag)
+    { 
+      setConfirmCode(false);
+      await validate(formValue) 
+    }
+    else
+    { enqueueSnackbar('Falha na verificação do email', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}}); }
+  }
+
+  const handleFormSubmit = async (values) => {
+    setFormValue(values);
+    await validate(values);
   };
 
   return (
@@ -143,7 +174,7 @@ const JwtLogin = () => {
                     >
                       Login
                     </LoadingButton>
-
+                    <ConfirmRegister open={confirmCode} email={values.email} onConfirm={()=>handleConfirm(true)} onError={()=>handleConfirm(false)} />
                     <Paragraph>
                       Don't have an account?
                       <NavLink
@@ -163,5 +194,7 @@ const JwtLogin = () => {
     </JWTRoot>
   );
 };
+
+const JwtLogin = ()=>(<SnackbarProvider maxSnack={3}><InnerJwtLogin /></SnackbarProvider>)
 
 export default JwtLogin;

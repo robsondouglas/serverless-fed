@@ -1,4 +1,5 @@
 {
     "name": "API",
-    "image": "node:16"
+    "image": "node:16",
+     "postCreateCommand": "npm i"
 }

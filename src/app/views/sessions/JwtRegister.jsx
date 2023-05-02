@@ -5,6 +5,7 @@ import { Box, styled } from '@mui/material';
 import { Paragraph } from 'app/components/Typography';
 import useAuth from 'app/hooks/useAuth';
 import { Formik } from 'formik';
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
@@ -42,27 +43,33 @@ const initialValues = {
 
 // form field validation schema
 const validationSchema = Yup.object().shape({
-  password: Yup.string()
-    .min(6, 'Password must be 6 character length')
-    .required('Password is required!'),
-  email: Yup.string().email('Invalid Email address').required('Email is required!')
+  password: Yup.string().required('Senha é obrigatória'),
+  email:    Yup.string().email('Endereço de email inválido').required('Email é obrigatório')
 });
 
-const JwtRegister = () => {
+const InnerJwtRegister = () => {
   const theme = useTheme();
   const { register } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleFormSubmit = async(values) => {
     setLoading(true);
-
+    
     try {
       await register(values.email, values.username, values.password);
+      enqueueSnackbar('Cadastro realizado com sucesso!', {variant: 'success', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
       navigate('/');
       setLoading(false);
     } catch (e) {
-      console.log(e);
+      const msgs = {
+        "UsernameExistsException": "O usuário informado já está cadastrado",
+        "InvalidPasswordException": "A senha informada não atende aos critérios de segurança"
+      }
+      console.log(e)
+      enqueueSnackbar(msgs[e.code] || 'Ocorreu um erro ao registrar o usuário', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
+      
       setLoading(false);
     }
   };
@@ -144,7 +151,7 @@ const JwtRegister = () => {
                       />
 
                       <Paragraph fontSize={13}>
-                        I have read and agree to the terms of service.
+                        Li e aceito os termos e condições de serviço
                       </Paragraph>
                     </FlexBox>
 
@@ -155,11 +162,11 @@ const JwtRegister = () => {
                       variant="contained"
                       sx={{ mb: 2, mt: 3 }}
                     >
-                      Register
+                      Registre-se
                     </LoadingButton>
 
                     <Paragraph>
-                      Already have an account?
+                      Já está cadastrado?
                       <NavLink
                         to="/session/signin"
                         style={{ color: theme.palette.primary.main, marginLeft: 5 }}
@@ -177,5 +184,8 @@ const JwtRegister = () => {
     </JWTRegister>
   );
 };
+
+
+const JwtRegister = () => (<SnackbarProvider maxSnack={3}><InnerJwtRegister /></SnackbarProvider>)
 
 export default JwtRegister;
