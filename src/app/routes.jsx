@@ -18,6 +18,11 @@ const AppEchart = Loadable(lazy(() => import('app/views/charts/echarts/AppEchart
 // dashboard page
 const Analytics = Loadable(lazy(() => import('app/views/dashboard/Analytics')));
 
+// task page
+const Task = Loadable(lazy(() => import('app/views/schedule/tasks')));
+const Photo = Loadable(lazy(() => import('app/views/gallery/photo')));
+
+
 const routes = [
   {
     element: (
@@ -29,16 +34,14 @@ const routes = [
       ...materialRoutes,
       // dashboard route
       {
-        path: '/dashboard/default',
-        element: <Analytics />,
+        path: 'task',
+        element: <Task />,
         auth: authRoles.admin
       },
-
-      // e-chart rooute
       {
-        path: '/charts/echarts',
-        element: <AppEchart />,
-        auth: authRoles.editor
+        path: 'album',
+        element: <Photo />,
+        auth: authRoles.admin
       }
     ]
   },
@@ -49,7 +52,7 @@ const routes = [
   { path: '/session/signup', element: <JwtRegister /> },
   { path: '/session/forgot-password', element: <ForgotPassword /> },
 
-  { path: '/', element: <Navigate to="dashboard/default" /> },
+  { path: '/', element: <Navigate to="task" /> },
   { path: '*', element: <NotFound /> }
 ];
 
