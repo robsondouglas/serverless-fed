@@ -1,6 +1,7 @@
 const textLight = {
   primary: 'rgba(52, 49, 76, 1)',
   secondary: 'rgba(52, 49, 76, 0.54)',
+  warm: 'rgba(200, 50, 50, 0.54)',
   disabled: 'rgba(52, 49, 76, 0.38)',
   hint: 'rgba(52, 49, 76, 0.38)',
 };
@@ -8,6 +9,7 @@ const textLight = {
 const textDark = {
   primary: '#fff',
   secondary: 'rgba(255, 255, 255, 0.7)',
+  warm: 'rgba(200, 50, 50, 0.54)',
   disabled: 'rgba(255, 255, 255, 0.64)',
   hint: 'rgba(255, 255, 255, 0.64)',
 };
@@ -34,6 +36,10 @@ export const themeColors = {
         main: '#7467ef',
         contrastText: '#ffffff',
       },
+      warm: {
+        main: '#ef7467',
+        contrastText: '#ffffff',
+      },
       background: {
         paper: '#fff',
         default: '#fafafa',
@@ -51,6 +57,10 @@ export const themeColors = {
       },
       secondary: {
         main: '#1976d2',
+        contrastText: '#ffffff',
+      },
+      warm: {
+        main: '#ef7467',
         contrastText: '#ffffff',
       },
       background: {
@@ -71,6 +81,10 @@ export const themeColors = {
         main: '#ff9e43',
         contrastText: textLight.primary,
       },
+      warm: {
+        main: '#ef7467',
+        contrastText: '#ffffff',
+      },
       error: errorColor,
       background: {
         paper: '#222A45',
@@ -90,6 +104,10 @@ export const themeColors = {
         main: '#ff9e43',
         contrastText: textLight.primary,
       },
+      warm: {
+        main: '#ef7467',
+        contrastText: '#ffffff',
+      },
       error: errorColor,
       background: {
         paper: '#222A45',
@@ -106,6 +124,10 @@ export const themeColors = {
         contrastText: '#ffffff',
       },
       secondary: secondaryColor,
+      warm: {
+        main: '#ef7467',
+        contrastText: '#ffffff',
+      },
       error: errorColor,
       background: {
         paper: '#fff',
@@ -181,6 +203,10 @@ export const themeColors = {
       secondary: {
         main: '#FFAF38',
         contrastText: textLight.primary,
+      },
+      warm: {
+        main: '#ef7467',
+        contrastText: '#ffffff',
       },
       error: errorColor,
       background: {

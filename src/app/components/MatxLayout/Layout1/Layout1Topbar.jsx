@@ -84,7 +84,7 @@ const IconBox = styled('div')(({ theme }) => ({
 const Layout1Topbar = () => {
   const theme = useTheme();
   const { settings, updateSettings } = useSettings();
-  const { logout, user } = useAuth();
+  const { logout, usr } = useAuth();
   const isMdScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const updateSidebarMode = (sidebarSettings) => {
@@ -139,35 +139,25 @@ const Layout1Topbar = () => {
               <UserMenu>
                 <Hidden xsDown>
                   <Span>
-                    Hi <strong>{user.name}</strong>
+                    Olá <strong>{usr.name}</strong>
                   </Span>
                 </Hidden>
-                <Avatar src={user.avatar} sx={{ cursor: 'pointer' }} />
+                <Avatar src={usr.avatar} sx={{ cursor: 'pointer' }} />
               </UserMenu>
             }
           >
-            <StyledItem>
-              <Link to="/">
-                <Icon> home </Icon>
-                <Span> Home </Span>
-              </Link>
-            </StyledItem>
 
             <StyledItem>
               <Link to="/page-layouts/user-profile">
                 <Icon> person </Icon>
-                <Span> Profile </Span>
+                <Span> Perfil </Span>
               </Link>
             </StyledItem>
 
-            <StyledItem>
-              <Icon> settings </Icon>
-              <Span> Settings </Span>
-            </StyledItem>
-
+            
             <StyledItem onClick={logout}>
               <Icon> power_settings_new </Icon>
-              <Span> Logout </Span>
+              <Span> Desconectar </Span>
             </StyledItem>
           </MatxMenu>
         </Box>

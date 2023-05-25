@@ -10,7 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import useAuth from 'app/hooks/useAuth';
 
 export default function ConfirmRegister({email, open, onConfirm, onError}) {
-  const { confirmCode } = useAuth();
+  const { confirmCode, ressendCode } = useAuth();
 
   const [state, setState] = useState({code: '', loading: false});
 
@@ -22,14 +22,24 @@ export default function ConfirmRegister({email, open, onConfirm, onError}) {
       await confirmCode(email, code);
       onConfirm?.();
     }
-    catch (e) {
-      console.log(JSON.stringify(e))
-      onError?.();
-    } 
-    finally{
-      setState({...state, loading: false});
-    }   
+    catch (e) 
+    { onError?.(); } 
+    finally
+    { setState({...state, loading: false});}   
   }
+
+  const handleResend = async()=>{
+    setState({...state, loading: true});
+    try
+    {await ressendCode(email);}
+    catch(ex)
+    { onError?.('Ocorreu um erro ao reenviar o código de segurança') }
+    finally
+    {setState({...state, loading: false});}     
+  }
+
+  
+
   
   return (
     <Box>
@@ -54,6 +64,9 @@ export default function ConfirmRegister({email, open, onConfirm, onError}) {
         </DialogContent>
 
         <DialogActions>
+        <Button disabled={loading} onClick={handleResend} color="secondary">
+            Reenviar 
+          </Button>
           <Button disabled={loading} onClick={handleConfirm} color="primary">
             Verificar
           </Button>

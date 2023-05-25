@@ -1,4 +1,5 @@
 import { Box, Button, Card, Grid, styled, TextField } from '@mui/material';
+import useAuth from 'app/hooks/useAuth';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,10 +29,18 @@ const ForgotPasswordRoot = styled(JustifyBox)(() => ({
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@example.com');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { forgot } = useAuth();
 
-  const handleFormSubmit = () => {
-    console.log(email);
+
+
+  const handleForgot = async() => {
+    setLoading(true)
+    try
+    { await forgot(email); }
+    finally
+    { setLoading(false) }
   };
 
   return (
@@ -44,7 +53,7 @@ const ForgotPassword = () => {
             </JustifyBox>
 
             <ContentBox>
-              <form onSubmit={handleFormSubmit}>
+              <form>
                 <TextField
                   type="email"
                   name="email"
@@ -56,18 +65,19 @@ const ForgotPassword = () => {
                   sx={{ mb: 3, width: '100%' }}
                 />
 
-                <Button fullWidth variant="contained" color="primary" type="submit">
-                  Reset Password
+                <Button fullWidth variant="contained" color="primary" onClick={()=>handleForgot()}>
+                  Reiniciar senha
                 </Button>
 
                 <Button
+                  disabled={loading}
                   fullWidth
                   color="primary"
                   variant="outlined"
                   onClick={() => navigate(-1)}
                   sx={{ mt: 2 }}
                 >
-                  Go Back
+                  Voltar
                 </Button>
               </form>
             </ContentBox>

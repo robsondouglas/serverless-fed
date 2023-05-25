@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import ConfirmRegister from './ConfirmRegister';
+import useToast from 'app/hooks/useToast';
 
 const FlexBox = styled(Box)(() => ({ display: 'flex', alignItems: 'center' }));
 
@@ -47,14 +48,14 @@ const validationSchema = Yup.object().shape({
   email:    Yup.string().email('Endereço de email inválido').required('Email é obrigatório')
 });
 
-const InnerJwtLogin = () => {
+const JwtLogin = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
   const [formValue, setFormValue] = useState({});
   const [confirmCode, setConfirmCode] = useState(false);
 
+  const {error} = useToast();
   const { login } = useAuth();
 
   const validate = async({email, password, remember})=>{
@@ -66,13 +67,12 @@ const InnerJwtLogin = () => {
       
       const msgs = {
         "UserNotConfirmedException": "O usuário ainda não confirmou o endereço de email",
-        "NotAuthorizedException": "A Usuário/senha incorretos"
+        "NotAuthorizedException": "Usuário/senha incorretos"
       }
       
+      error(msgs[e.code] || 'Usuário/senha incorretos');
       
-      enqueueSnackbar(msgs[e.code] || 'Usuário/senha incorretos', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
       
-      console.log(e.code)
       if(e.code === 'UserNotConfirmedException' )
       {setConfirmCode(true)}
 
@@ -87,7 +87,7 @@ const InnerJwtLogin = () => {
       await validate(formValue) 
     }
     else
-    { enqueueSnackbar('Falha na verificação do email', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}}); }
+    { error('Falha na verificação do email'); }
   }
 
   const handleFormSubmit = async (values) => {
@@ -134,7 +134,7 @@ const InnerJwtLogin = () => {
                       size="small"
                       name="password"
                       type="password"
-                      label="Password"
+                      label="Senha"
                       variant="outlined"
                       onBlur={handleBlur}
                       value={values.password}
@@ -154,14 +154,13 @@ const InnerJwtLogin = () => {
                           sx={{ padding: 0 }}
                         />
 
-                        <Paragraph>Remember Me</Paragraph>
+                        <Paragraph>Mantenha-me conectado</Paragraph>
                       </FlexBox>
 
                       <NavLink
                         to="/session/forgot-password"
-                        style={{ color: theme.palette.primary.main }}
-                      >
-                        Forgot password?
+                        style={{ color: theme.palette.primary.main }}>
+                        Esqueceu a senha?
                       </NavLink>
                     </FlexBox>
 
@@ -171,17 +170,18 @@ const InnerJwtLogin = () => {
                       loading={loading}
                       variant="contained"
                       sx={{ my: 2 }}
+                      fullWidth
                     >
-                      Login
+                      Entrar
                     </LoadingButton>
                     <ConfirmRegister open={confirmCode} email={values.email} onConfirm={()=>handleConfirm(true)} onError={()=>handleConfirm(false)} />
                     <Paragraph>
-                      Don't have an account?
+                      Não possui uma conta?
                       <NavLink
                         to="/session/signup"
                         style={{ color: theme.palette.primary.main, marginLeft: 5 }}
                       >
-                        Register
+                        Cadastre-se!
                       </NavLink>
                     </Paragraph>
                   </form>
@@ -194,7 +194,5 @@ const InnerJwtLogin = () => {
     </JWTRoot>
   );
 };
-
-const JwtLogin = ()=>(<SnackbarProvider maxSnack={3}><InnerJwtLogin /></SnackbarProvider>)
 
 export default JwtLogin;

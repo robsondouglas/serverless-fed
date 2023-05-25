@@ -4,6 +4,7 @@ import { Card, Checkbox, Grid, TextField } from '@mui/material';
 import { Box, styled } from '@mui/material';
 import { Paragraph } from 'app/components/Typography';
 import useAuth from 'app/hooks/useAuth';
+import useToast from 'app/hooks/useToast';
 import { Formik } from 'formik';
 import { SnackbarProvider, useSnackbar } from 'notistack';
 import { useState } from 'react';
@@ -52,24 +53,25 @@ const InnerJwtRegister = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
+  const {success, error} = useToast();
 
   const handleFormSubmit = async(values) => {
     setLoading(true);
     
     try {
       await register(values.email, values.username, values.password);
-      enqueueSnackbar('Cadastro realizado com sucesso!', {variant: 'success', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
+      success('Cadastro realizado com sucesso!');
       navigate('/');
       setLoading(false);
-    } catch (e) {
+    } 
+    catch (e) 
+    {
       const msgs = {
         "UsernameExistsException": "O usuário informado já está cadastrado",
         "InvalidPasswordException": "A senha informada não atende aos critérios de segurança"
       }
-      console.log(e)
-      enqueueSnackbar(msgs[e.code] || 'Ocorreu um erro ao registrar o usuário', {variant: 'error', anchorOrigin:{vertical: 'top', horizontal: 'center'}});
       
+      error(msgs[e.code] || 'Ocorreu um erro ao registrar o usuário');      
       setLoading(false);
     }
   };
@@ -93,8 +95,7 @@ const InnerJwtRegister = () => {
               <Formik
                 onSubmit={handleFormSubmit}
                 initialValues={initialValues}
-                validationSchema={validationSchema}
-              >
+                validationSchema={validationSchema}>
                 {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
                   <form onSubmit={handleSubmit}>
                     <TextField

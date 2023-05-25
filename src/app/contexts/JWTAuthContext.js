@@ -1,41 +1,23 @@
 import { createContext, useEffect, useReducer } from 'react';
 import { MatxLoading } from 'app/components';
-import {signIn, signUp, confirmSignup, refreshSignin} from './../../auth';
+import {signIn, signUp, confirmSignup, refreshSignin, ressendCode, forgot} from './../../auth';
 
 const initialState = {
-  user: null,
+  usr: null,
   isInitialised: false,
   isAuthenticated: false
 };
 
-// const isValidToken = (accessToken) => {
-//   if (!accessToken) return false;
-
-//   const decodedToken = jwtDecode(accessToken);
-//   const currentTime = Date.now() / 1000;
-//   return decodedToken.exp > currentTime;
-// };
-
-// const setSession = (accessToken) => {
-//   if (accessToken) {
-//     localStorage.setItem('accessToken', accessToken);
-//     axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-//   } else {
-//     localStorage.removeItem('accessToken');
-//     delete axios.defaults.headers.common.Authorization;
-//   }
-// };
-
 const reducer = (state, action) => {
   switch (action.type) {
     case 'INIT': {
-      const { isAuthenticated, user } = action.payload;
-      return { ...state, isAuthenticated, isInitialised: true, user };
+      const { isAuthenticated, user, name } = action.payload;
+      return { ...state, isAuthenticated, isInitialised: true, usr: {user, name} };
     }
 
     case 'LOGIN': {
-      const { user } = action.payload;
-      return { ...state, isAuthenticated: true, user };
+      const { user, name } = action.payload;
+      return { ...state, isAuthenticated: true, usr:{user, name} };
     }
 
     case 'LOGOUT': {
@@ -60,32 +42,27 @@ const AuthContext = createContext({
   logout: () => {},
   register: () => {},
   confirmCode: ()=>{},
-  reload: () => {}
+  reload: () => {},
+  ressendCode: ()=>{},
+  forgot: ()=>{}
 });
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-
   const login = async (email, password, remember) => {
-    const {name, user} = await signIn(email, password, remember);
-    dispatch({ type: 'LOGIN', payload: { name,  user }});
+    const res = await signIn(email, password, remember);
+    dispatch({ type: 'LOGIN', payload: {usr: res.user, name: res.name}});
   };
 
-
   const register = async (email, username, password) => {
-    await signUp(username, email, password) //await axios.post('/api/auth/register', { email, username, password });    
+    await signUp(username, email, password);    
     dispatch({ type: 'REGISTER', payload: {  } });
   };
 
-  const confirmCode = async (email, code) => {
-    await confirmSignup(email, code);
-  }; 
-
-  const logout = () => {
-    dispatch({ type: 'LOGOUT' });
-  };
-
+  const confirmCode = (email, code) =>  confirmSignup(email, code); 
+  const logout      = ()            => dispatch({ type: 'LOGOUT' });
+  
 
   useEffect(() => {
     (async () => {
@@ -102,7 +79,7 @@ export const AuthProvider = ({ children }) => {
   if (!state.isInitialised) return <MatxLoading />;
 
   return (
-    <AuthContext.Provider value={{ ...state, method: 'JWT', login, logout, register, confirmCode }}>
+    <AuthContext.Provider value={{ ...state, method: 'JWT', login, logout, register, confirmCode, ressendCode, forgot }}>
       {children}
     </AuthContext.Provider>
   );

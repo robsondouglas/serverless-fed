@@ -12,14 +12,11 @@ const UserPool = new CognitoUserPool({
 let _accessToken = '';
 
 export const signUp = (name, email, pwd) => new Promise((resolve,reject)=>{
-    UserPool.signUp(email, pwd, [{Name:'name', Value: name}], null, (error, data)=>{
-         error ?  reject(error) : resolve(data)
-    });
+    UserPool.signUp(email, pwd, [{Name:'name', Value: name}], null, (error, data)=> error ?  reject(error) : resolve(data));
 });
 
 
 export const signIn = (usr, pwd, persist) => new Promise((resolve, reject) => {
-
     localStorage.setItem('storage-credentials', persist ? 'local' : 'session' )
 
     const details = new AuthenticationDetails({Username: usr, Password: pwd});    
@@ -28,25 +25,39 @@ export const signIn = (usr, pwd, persist) => new Promise((resolve, reject) => {
     _user.authenticateUser(details, {
         onSuccess: ({idToken, refreshToken, accessToken}) => {
             resolve({name:idToken.payload.name, user:idToken.payload.email, refreshToken:refreshToken.token, accessToken:accessToken.jwtToken});
-            _accessToken = accessToken.jwtToken
+            _accessToken = accessToken.jwtToken;
+            ;
         },
         onFailure: reject,
         newPasswordRequired: ()=>console.log('required')
     });
 })
 
-export const refreshSignin = () => new Promise((resolve, reject) => {
+let _timerAuth = null;
+const autoResign = (expires) =>{
+    if(_timerAuth)
+    { clearTimeout(_timerAuth) }
+    
+    const d = new Date();
+
+    _timerAuth = setTimeout(()=> {
+        refreshSignin();
+    }, (expires * 1000) - d.valueOf() - 3000); //3s antes de expirar
+}
+
+export const refreshSignin = () => new Promise((resolve) => {
     const usr  = UserPool.getCurrentUser();
 
     if(usr){
-        usr.getSession((error, {idToken, refreshToken, accessToken}) => {
-            _accessToken = accessToken.jwtToken;            
-            error ?  resolve(null) : resolve({name:idToken.payload.name, user:idToken.payload.email});//, refreshToken:refreshToken.token, accessToken:accessToken.jwtToken})
+        usr.getSession((error, {idToken, accessToken, refreshToken}) => {
+            _accessToken = accessToken.jwtToken;
+            autoResign( accessToken.payload.exp )
+            error ?  resolve(null) : resolve({name:idToken.payload.name, user:idToken.payload.email, refreshToken:refreshToken.token, accessToken:accessToken.jwtToken});
         });
     }
     else
     { resolve(null) }
-})
+});
 
 export const getToken = () => _accessToken;
 
@@ -56,5 +67,14 @@ export const confirmSignup = (usr, code) => new Promise((resolve, reject) => {
         console.log(JSON.stringify(data));
         error ?  reject(error) : resolve(data)
     });
-})
+});
 
+export const ressendCode = (usr)=> new Promise((resolve, reject) => {    
+    const _user   = new CognitoUser({ Username: usr, Pool: UserPool, Storage: getStorage() });
+    _user.resendConfirmationCode((err, data)=> err ? reject(err) : resolve(data));
+});
+
+export const forgot = (usr) => new Promise((resolve, reject) => {
+    const _user   = new CognitoUser({ Username: usr, Pool: UserPool, Storage: getStorage() });
+    _user.forgotPassword((err, data)=> err ? reject(err) : resolve(data));
+});

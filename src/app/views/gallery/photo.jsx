@@ -1,37 +1,46 @@
 import { PhotoCamera } from "@mui/icons-material";
+import { list } from "./service";
+import { useState } from "react";
+import { useEffect } from "react";
+import PhotoUpload from "./photoUpload";
+import useToast from "app/hooks/useToast";
 
 const { Container, IconButton } = require("@mui/material")
 const { default: ReactImageGallery } = require("react-image-gallery")
 
-const Upl = ({OnSelectFiles})=>(<IconButton color="primary" aria-label="upload picture" component="label">
-<input hidden accept="image/*" type="file" onChange={(evt)=>OnSelectFiles?.(evt.target.files)} />
-<PhotoCamera />
-</IconButton>)
 
 
 const Photo = () => {
-    const images = [
-        // {
-        //   original: 'https://picsum.photos/id/1018/1000/600/',
-        //   thumbnail: 'https://picsum.photos/id/1018/250/150/',
-        //   originalTitle: 'Imagem 1'
-        // },
-        // {
-        //   original: 'https://picsum.photos/id/1015/1000/600/',
-        //   thumbnail: 'https://picsum.photos/id/1015/250/150/',
-        // },
-        // {
-        //   original: 'https://picsum.photos/id/1019/1000/600/',
-        //   thumbnail: 'https://picsum.photos/id/1019/250/150/',
-        // },
-      ];
-      
-      const handleUpload = (arqs) => {
-        console.log(arqs)
-      } 
 
-    return images.length == 0 ? (<Container fixed><Upl OnSelectFiles={handleUpload}></Upl></Container>) : (<Container fixed>
-        <ReactImageGallery items={images} renderCustomControls={()=> (<Upl OnSelectFiles={handleUpload}/>)} />
+
+  const data2Item = (data) =>({
+    original:  `https://daxi86wourk2c.cloudfront.net/photos/${data.IdPicture}`,
+    thumbnail: `https://daxi86wourk2c.cloudfront.net/thumbs/${data.IdPicture}`,
+    thumbnailAlt: data.Title,
+    description: data.Title,    
+  })
+
+  const[photos, setPhotos] = useState([])
+
+      const fill = () => {
+        list({}).then(items => {
+          const res = items.map(m=>data2Item(m))
+          
+          setPhotos(res);
+        })
+      }    
+      
+      const handleUploaded = (itm) => {
+        setPhotos([...photos, data2Item(itm)]);
+      }
+      
+      useEffect(()=>{
+          fill()
+      }, [])
+
+
+    return photos.length == 0 ? (<Container fixed><PhotoUpload OnUploaded={handleUploaded}/></Container>) : (<Container fixed>
+        <ReactImageGallery items={photos} showBullets="true" autoPlay="true" renderCustomControls={()=> (<PhotoUpload OnUploaded={handleUploaded}/>)} />
         </Container>)
 }
 

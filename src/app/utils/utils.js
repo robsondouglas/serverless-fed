@@ -1,3 +1,4 @@
+import { getToken } from 'auth';
 import { differenceInSeconds } from 'date-fns';
 
 export const convertHexToRGB = (hex) => {
@@ -131,4 +132,66 @@ export function getTimeDifference(date) {
   else if (difference < 86400 * 30) return `${Math.floor(difference / 86400)} d`;
   else if (difference < 86400 * 30 * 12) return `${Math.floor(difference / 86400 / 30)} mon`;
   else return `${(difference / 86400 / 30 / 12).toFixed(1)} y`;
+}
+
+const config = { 
+  pushKey: 'BCo-Or7a3w1BC8nfoVw9zmHrW00o-l9SobZEY7fhH8q_gKiGtvuFAh9zxTR96y7DKYCbGGwvg7mivHdU5ftaGxk', 
+  url: 'https://014txg6tsk.execute-api.sa-east-1.amazonaws.com/' //'http://localhost:3000/DEV/'
+};
+
+export const post = (svc, itm) => new Promise((resolve, reject)=>{
+  fetch(`${config.url}${svc}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      method: "POST",
+      body: JSON.stringify(itm)
+  })
+  .then(res => {
+    res.json()
+      .then( j  => resolve(j) )
+      .catch(ex => resolve(undefined))
+  })
+  .catch(ex=>reject(ex))
+})
+
+
+
+function urlB64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export async function subscribe(topic) {
+  const [swReg] = await navigator.serviceWorker.getRegistrations();  
+  const subscribed = await swReg.pushManager.getSubscription();
+  
+  if(!subscribed)
+  {
+    const subscription = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(config.pushKey),
+    });
+    
+    if(subscription)
+    {  await post('notifications/unsubscribe', {topic, subscription: JSON.stringify(subscription)}); }
+  }
+}
+
+export async function unsubscribe(){
+  const [swReg] = await navigator.serviceWorker.getRegistrations();
+  await swReg.unregister();
+  await post('notifications/unsubscribe', {topic, subscription: JSON.stringify(subscription)});
 }
